@@ -11,6 +11,7 @@ from selenium.webdriver.firefox.options import Options
 from prettytable import PrettyTable
 from time import sleep
 import pandas as pd
+from sqlalchemy import create_engine
 
 # set options
 options = Options()
@@ -104,6 +105,18 @@ for element in result_list:
 
     results.append([title, address, phone, star_rating, num_reviews])
 
+# save to mysql database
+connection_string = "mysql+mysqlconnector://root:development@localhost/extract_from_gmaps"
+engine = create_engine(connection_string, echo=True)
+
+with engine.connect() as connection:
+    connection.execute("CREATE DATABASE IF NOT EXISTS extract_from_gmaps")
+    connection.execute("USE extract_from_gmaps")
+    connection.execute("CREATE TABLE IF NOT EXISTS gmaps_data (id INT AUTO_INCREMENT PRIMARY KEY, title TEXT, address TEXT, phone TEXT, star_rating VARCHAR(10), num_reviews TEXT)")
+
+    sql_query = "INSERT INTO gmaps_data (title, address, phone, star_rating, num_reviews) VALUES (%s, %s, %s, %s, %s)"
+    connection.execute(sql_query, results)
+
 
 # print to screen
 columns = ["InstitutionName", "Address", "Phone", "Star Rating", "NumberOfReviews"]
@@ -114,7 +127,3 @@ table = PrettyTable(
 table.add_rows(results)
 print(table)
 print(len(result_list))
-
-# save to csv
-df = pd.DataFrame(results, columns=columns)
-df.to_csv('extract_data_from_gmaps.csv')
