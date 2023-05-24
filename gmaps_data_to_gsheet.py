@@ -116,6 +116,8 @@ scope = [
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name('credential/my-gsheet-credential.json', scope)
 client = gspread.authorize(credentials)
+sheet = client.create("SPREADSHEET_NAME")
+sheet.share('EMAIL_ADDRESS', perm_type='user', role='writer')
 sheet = client.open("SPREADSHEET_NAME").sheet1
 
 df = pd.DataFrame(results, columns=columns)
